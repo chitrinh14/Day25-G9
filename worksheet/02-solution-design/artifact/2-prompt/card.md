@@ -6,36 +6,29 @@ demo: ./demo.md
 
 # card.md — Lớp chỉ dẫn AI
 
-**Tình huống xử lý**: T-__  
+**Tình huống xử lý**: T-01 (Lỗi không chuyển tiếp khẩn cấp / Escalation Failure)  
 Xem `../../1-map-and-format.md` Phần A.
 
 ---
 
 ## 1. Giải pháp là gì?
 
-[Viết 2-3 câu. Nói rõ nhóm sẽ thêm luật, giới hạn hoặc ví dụ mẫu nào để AI trả lời an toàn hơn.]
-
-Ví dụ:
-
-> Khi người dùng hỏi ngày, số tiền hoặc chính sách tuyển sinh, AI chỉ được trả lời nếu có nguồn chính thức. Nếu thiếu nguồn, AI phải nói rõ là chưa xác minh được và chuyển cho tư vấn viên.
+Thiết lập một rào chắn hệ thống (System Guardrail) mang tên **"Nguyên tắc ngắt lời khẩn cấp"**. Khi nhận diện các từ khóa chỉ sự hoảng loạn hoặc giới hạn thời gian gắt gao (ví dụ: "cứu", "sắp đóng gate", "lỡ chuyến", "tai nạn"), AI bị cấm tuyệt đối việc trích xuất (RAG) và giải thích các điều khoản chính sách. Thay vào đó, AI bắt buộc trả lời dưới 15 chữ và gọi hàm hệ thống để kích hoạt Handoff (chuyển người thật).
 
 ---
 
 ## 2. Vì sao sửa ở lớp chỉ dẫn AI?
 
-[Chọn 1-2 ý đúng với giải pháp của nhóm.]
-
-- AI đang trả lời quá tự tin khi thiếu nguồn.
-- AI đang chiều theo giả định sai của người dùng.
-- AI cần luật rõ: khi nào trả lời, khi nào từ chối, khi nào chuyển sang người thật.
-- Có thể sửa nhanh bằng prompt trước khi thay đổi hệ thống lớn hơn.
+- AI đang trả lời quá tự tin, ưu tiên việc "làm hài lòng bằng cách cung cấp thông tin" thay vì "cung cấp giải pháp hành động nhanh".
+- AI cần luật rõ: khi nào giải thích, khi nào từ chối, khi nào bắt buộc chuyển sang người thật.
+- Có thể sửa nhanh bằng prompt để đè lại (override) bản tính thích sinh văn bản dài của LLM, ngăn chặn độ trễ trong tình huống khẩn cấp.
 
 **Hành động phòng vệ chính**:
 
-- [ ] Ngăn câu trả lời sai ngay từ đầu
+- [x] Ngăn câu trả lời dài dòng/sai bối cảnh ngay từ đầu
 - [ ] Bắt buộc nêu nguồn khi nói về thông tin quan trọng
 - [ ] Từ chối trả lời khi thiếu căn cứ
-- [ ] Chuyển người thật khi vượt phạm vi
+- [x] Chuyển người thật khi vượt phạm vi (Vượt giới hạn thời gian xử lý)
 
 ---
 
@@ -45,11 +38,10 @@ Ví dụ:
 
 Demo cần có:
 
-- Luật chính cho AI
-- Mẫu câu khi thiếu nguồn
-- Mẫu câu khi cần chuyển sang người thật
-- 2-3 ví dụ hỏi đáp để kiểm tra luật
-- Kết quả thử lại với vài tình huống từ Bài 1
+- Luật System Prompt chính cho AI.
+- Mẫu câu khi cần chuyển sang người thật khẩn cấp.
+- 3 ví dụ hỏi đáp để kiểm tra luật (Khẩn cấp thật, Hỏi bình thường, Đùa cợt dùng từ khẩn cấp).
+- Kết quả thử lại với các tình huống từ Bài 1.
 
 ---
 
@@ -57,20 +49,20 @@ Demo cần có:
 
 **Có thể gây vấn đề gì?**
 
-[Ví dụ: AI từ chối quá nhiều, câu trả lời cứng, trải nghiệm chậm hơn vì phải kiểm tra nguồn.]
+AI có thể trở nên "quá nhạy cảm" (False Positive), tự động ngắt chat và chuyển cho nhân viên thật ngay cả khi khách hàng chỉ dùng các từ lóng hoặc nói đùa (Ví dụ: "Cứu em với, giá vé đợt này cao quá"). Việc này gây quá tải cho hệ thống Live Agent.
 
 **Nhóm giảm vấn đề đó bằng cách nào?**
 
-[Ví dụ: chỉ bắt buộc nguồn với thông tin rủi ro cao; tách từ chối mềm và từ chối cứng; kiểm tra lại bằng bộ tình huống.]
+Prompt sẽ yêu cầu AI đánh giá "Intent" (ý định) đi kèm "Context" (ngữ cảnh): Chỉ kích hoạt Emergency Mode khi có từ khóa khẩn cấp **cộng với** bối cảnh không gian/thời gian rõ ràng (đang ở sân bay, giờ bay sát nút). Với các trường hợp "than vãn", AI vẫn xử lý bình thường.
 
 ---
 
 ## 5. Checklist trước khi nộp
 
-- [ ] Luật viết đủ cụ thể để AI làm theo.
-- [ ] Có mẫu câu khi AI không có đủ thông tin.
-- [ ] Có ví dụ cho tình huống dễ sai.
-- [ ] Có thử lại bằng tình huống trong Bài 1.
-- [ ] Không dùng prompt như cách duy nhất nếu lỗi nằm ở dữ liệu hoặc quy trình.
+- [x] Luật viết đủ cụ thể để AI làm theo.
+- [x] Có mẫu câu khi AI không có đủ thông tin / cần dừng lại.
+- [x] Có ví dụ cho tình huống dễ sai (False positive).
+- [x] Có thử lại bằng tình huống trong Bài 1.
+- [x] Không dùng prompt như cách duy nhất (đã phối hợp với lớp UI/UX ở phần trước).
 
-**Người phụ trách**: [Tên thành viên]
+**Người phụ trách**: Chi & My

@@ -31,8 +31,8 @@ Ba lớp này bổ sung cho nhau. Nếu một lớp lọt lỗi, lớp khác v�
 
 ## Thông tin nhóm
 
-- **Chủ đề**: [...]
-- **Thành viên**: [...]
+- **Chủ đề**: Trợ lý đặt vé và chăm sóc khách hàng hàng không (AI Flight Assistant).
+- **Thành viên**: Chi, My
 - **Ngày**: 2026-05-13
 
 ---
@@ -41,11 +41,11 @@ Ba lớp này bổ sung cho nhau. Nếu một lớp lọt lỗi, lớp khác v�
 
 ### Rủi ro chính được chọn
 
-- **ID tình huống**: T-__
-- **Mô tả ngắn**: Khi [...], AI có xu hướng [...], gây [...] cho [...]
-- **Mức độ**: [Nặng / Vừa]
-- **Điểm rủi ro**: [...]
-- **Vì sao chọn tình huống này**: [...]
+- **ID tình huống**: T-01
+- **Mô tả ngắn**: Khi hành khách đang gặp tình huống khẩn cấp tại sân bay (như sắp đóng gate, lỡ chuyến, trẻ nhỏ ốm), AI có xu hướng trả lời rập khuôn, trích dẫn luật lệ dài dòng thay vì cung cấp giải pháp hành động ngay lập tức, gây lỡ chuyến bay và trải nghiệm tồi tệ cho người dùng.
+- **Mức độ**: Nặng (MUST fix)
+- **Điểm rủi ro**: 25/25 (Impact 5 x Urgency 5)
+- **Vì sao chọn tình huống này**: Đây là điểm mù nguy hiểm nhất của một Chatbot CSKH. Hành khách ở trạng thái này rất dễ kích động (panic). Nếu AI không thể Escalation (chuyển tiếp) kịp thời, hãng sẽ đối mặt trực tiếp với thiệt hại tài chính (đền bù vé) và khủng hoảng truyền thông tại sân bay.
 
 ### Tìm nguyên nhân gốc
 
@@ -54,9 +54,9 @@ Ba lớp này bổ sung cho nhau. Nếu một lớp lọt lỗi, lớp khác v�
 - [ ] Thiếu nguồn dữ liệu đúng.
 - [ ] AI đoán khi không biết.
 - [ ] Giao diện khiến người dùng tin quá mức.
-- [ ] Quy trình thiếu người duyệt hoặc thiếu bước chuyển sang người thật.
+- [x] Quy trình thiếu người duyệt hoặc thiếu bước chuyển sang người thật (Escalation failure).
 - [ ] Không có theo dõi sau khi ra mắt.
-- [ ] Khác: [...]
+- [x] Khác: AI không được lập trình để phân tích sắc thái cảm xúc/mức độ khẩn cấp (Urgency/Sentiment Classification) của đầu vào, dẫn đến việc xử lý mọi query như thông tin tra cứu bình thường.
 
 ### Bảng nối nguyên nhân với tầng sửa
 
@@ -65,57 +65,18 @@ Ba lớp này bổ sung cho nhau. Nếu một lớp lọt lỗi, lớp khác v�
 | Thiếu nguồn đúng | Dữ liệu / tra cứu nguồn (RAG) / chính sách nguồn | `3-architecture` là chính |
 | AI đoán bừa | Chỉ dẫn hệ thống / quy tắc từ chối / dẫn nguồn | `2-prompt` là chính |
 | Người dùng tin quá mức | Giao diện cảnh báo / cách viết mức tin cậy | `1-uiux` là chính |
-| Tình huống nhạy cảm | Người duyệt / chuyển sang người thật | `1-uiux` + `2-prompt` + `3-architecture` |
-| Lỗi lặp lại sau khi ra mắt | Theo dõi / vòng phản hồi | `3-architecture` là chính |
-
-Nguyên tắc: lỗi ở tầng nào, ưu tiên sửa ở tầng đó. Đừng chỉ thêm cảnh báo giao diện nếu nguyên nhân gốc là thiếu nguồn dữ liệu hoặc AI đoán khi không biết.
-
-### 10 tầng giải pháp tham khảo
-
-Không bắt buộc dùng đủ 10 tầng. Bảng này giúp nhóm chọn đúng hướng sửa.
-
-| Tầng | Khi nào dùng |
-|---|---|
-| Giao diện | Người dùng tin AI quá mức, thiếu cảnh báo, thiếu nguồn, thiếu nút chuyển sang người thật |
-| Chỉ dẫn AI | AI đoán khi không biết, không hỏi lại, không từ chối |
-| Quy trình xử lý | Cần phân loại ý định, chuyển đúng nơi xử lý, có cách xử lý khi AI không nên trả lời |
-| Dữ liệu / tra cứu nguồn (RAG) | Thiếu nguồn đúng, nguồn cũ, AI không dựa vào nguồn đáng tin cậy |
-| Theo dõi | Lỗi lặp lại sau khi ra mắt nhưng không ai thấy |
-| Chính sách / thông báo giới hạn | Người dùng không biết giới hạn của AI |
-| Người duyệt / phê duyệt | Tình huống pháp lý, y tế, tài chính, tuyển dụng, hoặc tác động lớn |
-| Vai trò trách nhiệm | Có cảnh báo nhưng không ai chịu trách nhiệm xử lý |
-| Vòng phản hồi | Cần người dùng / người rà báo lỗi để cập nhật hệ thống |
-| Kiến trúc lai | LLM một mình không đủ, cần rule, classifier, hoặc nhiều bước kiểm tra |
-
-### 4 hành động phòng vệ
-
-Mỗi lớp nên làm ít nhất một việc:
-
-- **Ngăn**: giảm khả năng lỗi xảy ra từ đầu.
-- **Phát hiện**: nhận ra lỗi hoặc tín hiệu nguy hiểm.
-- **Khắc phục**: chuyển sang người thật, dùng câu trả lời dự phòng, hoặc dừng trả lời.
-- **Thông báo**: giúp người dùng hiểu mức tin cậy và rủi ro.
-
-Gợi ý theo mức rủi ro:
-
-| Mức rủi ro | Nên có |
-|---|---|
-| Nhẹ | Ít nhất 1 hành động |
-| Vừa | Ít nhất 2 hành động |
-| Nặng | Ít nhất 3 hành động |
-| Rất nặng / không đảo ngược được | Cố gắng đủ 4 hành động + có người chịu trách nhiệm |
+| Tình huống nhạy cảm (Khẩn cấp/Panic) | Phân loại ý định / Chuyển sang người thật | `1-uiux` + `2-prompt` + `3-architecture` |
 
 ### Kết luận Phần A
 
-**Nguyên nhân gốc**: [...]
+**Nguyên nhân gốc**: Hệ thống hiện tại thiếu cơ chế "Triage" (phân loại mức độ khẩn cấp). Nó đối xử với câu hỏi "Tôi lỡ chuyến, cửa sắp đóng" giống hệt câu hỏi "Hành lý 20kg giá bao nhiêu?".
 
-**Tầng chính cần sửa**: [...]
+**Tầng chính cần sửa**: Quy trình xử lý (Escalation routing) và Chỉ dẫn AI (Role boundary).
 
 **Vì sao cần 3 lớp giải pháp**:
-
-- Lớp giao diện: [...]
-- Lớp chỉ dẫn AI: [...]
-- Lớp kiến trúc dữ liệu: [...]
+- **Lớp giao diện (`1-uiux`)**: Cần thiết kế nút "SOS / Hỗ trợ Khẩn cấp tại sân bay" luôn hiển thị để Bypass AI khi cần, đồng thời có UI thông báo rõ AI đang chuyển máy cho nhân viên thật.
+- **Lớp chỉ dẫn AI (`2-prompt`)**: Cần System Prompt cứng yêu cầu AI nhận diện các keyword khẩn cấp (gate, lỡ, muộn, cấp cứu) để ngắt luồng sinh text dài và xuất ra trigger chuyển hướng.
+- **Lớp kiến trúc dữ liệu (`3-architecture`)**: Cần một lớp phân loại (Classifier API) đặt trước RAG. Nếu Classifier đánh dấu là "High Urgency", hệ thống không tốn thời gian gọi RAG nữa mà định tuyến thẳng sang Live Agent Queue.
 
 ---
 
@@ -125,66 +86,50 @@ Mỗi lớp cần một bản demo. Demo giúp biến ý tưởng thành thứ t
 
 | Lớp | Thư mục | Định dạng demo chọn | Thời gian dự kiến |
 |---|---|---|---|
-| Giao diện | `1-uiux` | [vẽ tay / Excalidraw / Figma / HTML / ASCII / Mermaid] | __ phút |
-| Chỉ dẫn AI | `2-prompt` | [bản prompt trong Markdown + ví dụ] | __ phút |
-| Kiến trúc dữ liệu | `3-architecture` | [ASCII / Mermaid / sơ đồ hộp-mũi tên] | __ phút |
+| Giao diện | `1-uiux` | ASCII UI mockup | 15 phút |
+| Chỉ dẫn AI | `2-prompt` | Bản prompt trong Markdown + ví dụ | 15 phút |
+| Kiến trúc dữ liệu | `3-architecture` | Sơ đồ Mermaid (Flowchart) | 20 phút |
 
 **Lý do chọn demo**
 
-- Giao diện: [...]
-- Chỉ dẫn AI: [...]
-- Kiến trúc dữ liệu: [...]
-
-Gợi ý: có thể dùng AI để dựng nhanh bản nháp demo, nhưng nhóm phải đọc lại và sửa.
-
-### Chọn demo theo điều cần chứng minh
-
-| Nếu cần chứng minh... | Demo phù hợp |
-|---|---|
-| Người dùng nhìn thấy gì | Sketch, Figma, HTML, ASCII UI |
-| AI được chỉ dẫn thế nào | Bản prompt trong Markdown, ví dụ trả lời |
-| Dữ liệu đi qua đâu | Sơ đồ hộp-mũi tên, ASCII, Mermaid |
-| Quy trình chuyển sang người thật | Sơ đồ quy trình |
+- **Giao diện**: ASCII là cách nhanh nhất để team hình dung vị trí nút bấm và thông báo chuyển hướng trên màn hình chat mà không cần tool thiết kế.
+- **Chỉ dẫn AI**: Prompt Markdown cho phép nhìn rõ Guardrails và điều kiện If/Then mà mô hình phải tuân theo.
+- **Kiến trúc dữ liệu**: Mermaid sinh ra biểu đồ luồng (Flowchart) rất rõ ràng để thấy dữ liệu đi qua Classifier trước khi quyết định gọi LLM hay đẩy cho Human.
 
 ---
 
 ## Phần C — Ba lớp giải pháp
 
-Ghi tóm tắt ở đây. Chi tiết nằm trong `card.md` và `demo.*` của từng thư mục.
-
 ### Lớp 1 — Giao diện (`artifact/1-uiux/`)
 
-- **Cách tiếp cận**: [...]
-- **Hành động phòng vệ bao phủ**: [Thông báo / Phát hiện / Khắc phục]
-- **Demo**: [...]
-- **Trạng thái**: [Chưa làm / Đang làm / Xong]
+- **Cách tiếp cận**: Thêm nút "Hỗ trợ Khẩn cấp" (Panic Button) cố định trên khung chat. Khi AI nhận diện tình huống khẩn cấp, UI tự động khóa khung nhập liệu và hiển thị Countdown chờ nhân viên thật.
+- **Hành động phòng vệ bao phủ**: Khắc phục / Thông báo
+- **Demo**: Bản vẽ ASCII UI.
+- **Trạng thái**: Đang làm
 
 Link chi tiết:
-
 - `artifact/1-uiux/card.md`
-- `artifact/1-uiux/demo.*`
+- `artifact/1-uiux/demo.txt`
 
 ### Lớp 2 — Chỉ dẫn AI (`artifact/2-prompt/`)
 
-- **Cách tiếp cận**: [...]
-- **Hành động phòng vệ bao phủ**: [Ngăn / Từ chối / Hỏi lại / Dẫn nguồn]
-- **Demo**: [...]
-- **Trạng thái**: [Chưa làm / Đang làm / Xong]
+- **Cách tiếp cận**: Bổ sung Guardrail: "Nguyên tắc ngắt lời". Yêu cầu AI không giải thích chính sách khi phát hiện intent khẩn cấp. Trả lời dưới 15 chữ và gọi hàm `escalate_to_human()`.
+- **Hành động phòng vệ bao phủ**: Ngăn / Khắc phục
+- **Demo**: System Prompt Markdown với Few-shot examples.
+- **Trạng thái**: Đang làm
 
 Link chi tiết:
-
 - `artifact/2-prompt/card.md`
 - `artifact/2-prompt/demo.md`
 
 ### Lớp 3 — Kiến trúc dữ liệu (`artifact/3-architecture/`)
 
-- **Cách tiếp cận**: [...]
-- **Hành động phòng vệ bao phủ**: [Ngăn / Phát hiện / Khắc phục]
-- **Demo**: [...]
-- **Trạng thái**: [Chưa làm / Đang làm / Xong]
+- **Cách tiếp cận**: Xây dựng một Triage Router. Trước khi Prompt vào LLM, nó đi qua một Sentiment/Keyword Classifier siêu nhẹ. Nếu Flag = Red (Khẩn cấp), Router chặn luồng RAG và đẩy thẳng Ticket lên CRM của Human Agent kèm mức độ Priority 1.
+- **Hành động phòng vệ bao phủ**: Phát hiện / Khắc phục
+- **Demo**: Mermaid Flowchart.
+- **Trạng thái**: Đang làm
 
 Link chi tiết:
-
 - `artifact/3-architecture/card.md`
 - `artifact/3-architecture/demo.md`
 
@@ -194,37 +139,9 @@ Link chi tiết:
 
 | Câu hỏi | Trả lời |
 |---|---|
-| Rủi ro chính đã chọn là gì? | T-__ |
-| Nguyên nhân gốc là gì? | [...] |
-| 3 lớp giải pháp đã đủ chưa? | Giao diện: __ / Chỉ dẫn AI: __ / Kiến trúc: __ |
-| 4 hành động đã bao phủ chưa? | Ngăn: __ / Phát hiện: __ / Khắc phục: __ / Thông báo: __ |
-| Nhóm khác đã góp ý chưa? | [...] |
-| Nhóm đã sửa gì sau phản biện? | [...] |
-
-## Phản biện chéo: 4 câu phải trả lời
-
-Khi nhóm khác góp ý, hoặc khi nhóm tự rà lại, dùng 4 câu này:
-
-| Góc phản biện | Câu hỏi |
-|---|---|
-| Đúng tầng | Giải pháp có sửa đúng nguyên nhân gốc không? |
-| Cụ thể | Demo có đủ rõ để hiểu cách vận hành không? |
-| Đủ lớp | 3 lớp có bổ sung cho nhau không, hay đang lặp cùng một ý? |
-| Tác dụng phụ | Giải pháp có làm chậm, tốn kém, rối giao diện, hoặc gây hiểu nhầm mới không? |
-
-Ghi góp ý cụ thể vào `card.md` hoặc phần tổng kiểm tra. Không ghi chung chung "ổn" hoặc "chưa ổn".
-
-## Gợi ý chia việc
-
-Nhóm 3 người:
-
-- Thành viên A: `artifact/1-uiux/`
-- Thành viên B: `artifact/2-prompt/`
-- Thành viên C: `artifact/3-architecture/`
-
-Nhóm 2 người:
-
-- Một người phụ trách 2 lớp.
-- Người còn lại phụ trách 1 lớp và rà lại 2 lớp kia.
-
-5 phút cuối: cả nhóm đọc chéo 3 lớp, sửa lại bảng tổng kiểm tra, rồi chuẩn bị phản biện chéo.
+| Rủi ro chính đã chọn là gì? | T-01 (Escalation Failure) |
+| Nguyên nhân gốc là gì? | Thiếu cơ chế phân loại (Triage) mức độ khẩn cấp và thiếu luồng chuyển giao (handoff). |
+| 3 lớp giải pháp đã đủ chưa? | Giao diện: Xong định hướng / Chỉ dẫn AI: Xong định hướng / Kiến trúc: Xong định hướng |
+| 4 hành động đã bao phủ chưa? | Ngăn: Có (Prompt) / Phát hiện: Có (Kiến trúc) / Khắc phục: Có (Kiến trúc+UI) / Thông báo: Có (UI) |
+| Nhóm khác đã góp ý chưa? | Đang đợi review. |
+| Nhóm đã sửa gì sau phản biện? | Sẽ cập nhật. |
