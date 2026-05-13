@@ -13,7 +13,7 @@ Xem `../../1-map-and-format.md` Phần A.
 
 ## 1. Giải pháp là gì?
 
-Xây dựng một **Bộ định tuyến phân loại khẩn cấp (Triage Router & Classifier API)** đặt ngay sau khi nhận câu hỏi của người dùng và TRƯỚC khi gọi hệ thống RAG. Nếu Classifier bắt được cờ đỏ (Red Flag - Khẩn cấp), hệ thống sẽ bỏ qua hoàn toàn luồng xử lý của AI, lập tức đẩy yêu cầu vào hệ thống CRM của nhân viên (Live Agent Queue) kèm mức độ Ưu tiên 1 (Priority 1).
+Xây dựng một **Bộ định tuyến phân loại khẩn cấp (Triage Router & Classifier API)** đặt ngay sau khi nhận câu hỏi của người dùng và TRƯỚC khi gọi hệ thống RAG. Nếu Classifier bắt được cờ đỏ (Red Flag - Khẩn cấp), hệ thống sẽ bỏ qua hoàn toàn luồng xử lý của AI, lập tức đẩy yêu cầu vào hệ thống CRM của nhân viên (Live Agent Queue) kèm mức độ Ưu tiên 1 (Priority 1). Bổ sung cơ chế **"Handoff-back"**. Khi nhân viên xác nhận đóng Ticket trên CRM, một tín hiệu (Signal) sẽ được gửi về Router để mở khóa UI và trả phiên làm việc về luồng AI bình thường, cho phép khách hàng tiếp tục tra cứu thông tin không khẩn cấp.
 
 ---
 
@@ -29,6 +29,7 @@ Xây dựng một **Bộ định tuyến phân loại khẩn cấp (Triage Route
 - [x] Phát hiện khi có rủi ro khẩn cấp tiềm ẩn (thông qua Classifier)
 - [x] Khắc phục bằng cách chuyển sang người thật (Bypass LLM)
 - [x] Ghi lại lỗi (False Positive/Negative) để cải thiện sau
+- [x] Tự động phục hồi luồng AI sau khi con người xử lý xong.
 
 ---
 
@@ -48,11 +49,11 @@ Demo cần có:
 
 **Có thể gây vấn đề gì?**
 
-Bộ Classifier có thể nhận diện nhầm (False Positive), ví dụ khách chỉ nói "cứu tôi, vé đắt quá" nhưng hệ thống lại tưởng là cấp cứu tại sân bay và đẩy sang nhân viên, làm tốn nguồn lực CSKH con người.
+Bộ Classifier có thể nhận diện nhầm (False Positive), ví dụ khách chỉ nói "cứu tôi, vé đắt quá" nhưng hệ thống lại tưởng là cấp cứu tại sân bay và đẩy sang nhân viên, làm tốn nguồn lực CSKH con người. Ngoài ra thì xung đột dữ liệu khi AI không biết nhân viên thật đã nói gì/làm gì với khách, dẫn đến việc AI trả lời mâu thuẫn ngay sau khi nhận lại luồng chat.
 
 **Nhóm giảm vấn đề đó bằng cách nào?**
 
-Sử dụng **Kiến trúc Lai (Hybrid Classifier)**: Không chỉ dựa vào từ khóa (Keywords) mà phải kết hợp với **Metadata** của mã đặt chỗ (PNR). Hệ thống chỉ bật cờ đỏ (Red Flag) nếu: Có từ khóa khẩn cấp + Giờ khởi hành của PNR là trong vòng 24 giờ tới. Nếu PNR bay vào tháng sau, hệ thống đẩy về luồng bot bình thường.
+Sử dụng **Kiến trúc Lai (Hybrid Classifier)**: Không chỉ dựa vào từ khóa (Keywords) mà phải kết hợp với **Metadata** của mã đặt chỗ (PNR). Hệ thống chỉ bật cờ đỏ (Red Flag) nếu: Có từ khóa khẩn cấp + Giờ khởi hành của PNR là trong vòng 24 giờ tới. Nếu PNR bay vào tháng sau, hệ thống đẩy về luồng bot bình thường. Khi Handoff-back, hệ thống sẽ đẩy một bản tóm tắt (Summary) công việc của nhân viên vào bộ nhớ tạm (Buffer memory) của AI để AI nắm được bối cảnh hiện tại
 
 ---
 

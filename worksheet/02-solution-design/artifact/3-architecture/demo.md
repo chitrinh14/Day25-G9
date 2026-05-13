@@ -21,6 +21,10 @@ graph TD
     C -- CÓ (Red Flag) --> D[Kích hoạt Emergency Handoff]
     D --> E[Khóa Input UI của người dùng]
     D --> F[Đẩy Ticket P1 vào Hàng đợi CRM của Nhân viên]
+
+    F --> L[Nhân viên xử lý xong & Đóng Ticket]
+    L --> M[Gửi Signal 'Unlock' & Context Summary]
+    M --> G[Luồng AI bình thường]
     
     C -- KHÔNG (Normal) --> G[Luồng AI bình thường]
     G --> H[Truy xuất Database / FAQ bằng RAG]
